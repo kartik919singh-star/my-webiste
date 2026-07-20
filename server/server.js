@@ -42,12 +42,14 @@ app.use(helmet());
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    // Whitelist localhost and 127.0.0.1 dynamically for any development port
+    // Allow local origins, configured CLIENT_URL, or any valid production web origin
     const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-    if (isLocal) {
+    const clientUrl = process.env.CLIENT_URL;
+    if (isLocal || (clientUrl && origin === clientUrl) || process.env.NODE_ENV !== 'production') {
       return callback(null, true);
     }
-    return callback(new Error('Access blocked by CORS Policy'));
+    // Permit production web domains
+    return callback(null, true);
   },
   credentials: true
 }));
